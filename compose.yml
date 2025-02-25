@@ -1,0 +1,31 @@
+services:
+  docker-proxy:
+    image: tecnativa/docker-socket-proxy
+    container_name: docker-proxy
+    restart: always
+    privileged: true
+    ports:
+      - "2375:2375"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      PING: "1"
+      CONTAINERS: "1"
+      POST: "1"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:2375/_ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 2s
+
+  web-docker-dumb:
+    build: .
+    container_name: web-docker-dumb
+    depends_on:
+      docker-proxy:
+        condition: service_healthy
+    environment:
+      - DOCKER_HOST=tcp://docker-proxy:2375
+    ports:
+      - "8000:8000"
