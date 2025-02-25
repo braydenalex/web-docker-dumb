@@ -3,14 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>web-docker-dumb</title>
+  <title>Docker Container Manager</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
-    <h1>Docker Container Manager</h1>
-    <button id="refresh">Refresh</button>
-    <ul id="containerList"></ul>
+    <header>
+      <h1>Docker Container Manager</h1>
+      <p class="description">Manage your Docker containers easily from this interface.</p>
+      <button id="refresh" class="refresh-btn">Refresh</button>
+    </header>
+    <section class="content">
+      <ul id="containerList" class="container-list"></ul>
+    </section>
   </div>
 
   <script src="script.js"></script>

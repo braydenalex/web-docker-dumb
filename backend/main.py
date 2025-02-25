@@ -1,6 +1,6 @@
 import os
 import docker
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
@@ -9,6 +9,7 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
 BASE_PATH = os.getenv("BASE_PATH", "").rstrip("/")
 DOCKER_HOST = os.getenv("DOCKER_HOST", "tcp://docker-proxy:2375")
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 
 client = docker.DockerClient(base_url=DOCKER_HOST)
 
@@ -19,10 +20,10 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# Allow CORS for frontend access (will remove for prod)
+# Allow CORS for frontend access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -35,15 +36,25 @@ def list_containers():
 
 @app.post("/containers/{container_id}/start")
 def start_container(container_id: str):
-    container = client.containers.get(container_id)
-    container.start()
-    return {"message": f"Started {container.name}"}
+    try:
+        container = client.containers.get(container_id)
+        container.start()
+        return {"message": f"Started {container.name}"}
+    except docker.errors.NotFound:
+        raise HTTPException(status_code=404, detail="Container not found")
+    except docker.errors.APIError as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/containers/{container_id}/stop")
 def stop_container(container_id: str):
-    container = client.containers.get(container_id)
-    container.stop()
-    return {"message": f"Stopped {container.name}"}
+    try:
+        container = client.containers.get(container_id)
+        container.stop()
+        return {"message": f"Stopped {container.name}"}
+    except docker.errors.NotFound:
+        raise HTTPException(status_code=404, detail="Container not found")
+    except docker.errors.APIError as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 frontend_path = os.path.join(os.path.dirname(__file__), "frontend_build")
 if os.path.exists(frontend_path):
