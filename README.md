@@ -4,6 +4,10 @@
 
 **web-docker-dumb** is a simple web-based user interface designed for users who are already familiar with Docker and Docker Compose command-line tools. This project aims to provide a basic set of features to manage Docker containers remotely.
 
+## Why?
+
+Every tool, even "lightweight" ones had too many features. I hated using GUI's to manipulate compose files as I couldn't see exactly what they were doing.
+
 ## Features
 
 - **View All Containers**: Easily view a list of all Docker containers, including their status and basic details.
