@@ -1,41 +1,89 @@
 const API_URL = `/containers`;
 
 async function fetchContainers() {
-  showSpinner();
   try {
     const response = await fetch(API_URL);
     const containers = await response.json();
-    renderContainers(containers);
+    renderUI(containers);
   } catch (error) {
     console.error("Failed to load containers", error);
-  } finally {
-    hideSpinner();
   }
 }
 
-function renderContainers(containers) {
-  const list = document.getElementById("containerList");
-  list.innerHTML = "";
+function renderUI(containers) {
+  updateSidebar(containers);
+  updateSummary(containers);
+  // Ensure the summary view is visible and detail view is hidden.
+  document.getElementById("summaryView").style.display = 'block';
+  document.getElementById("detailView").style.display = 'none';
+}
 
+function updateSidebar(containers) {
+  const sidebarList = document.getElementById("sidebarList");
+  sidebarList.innerHTML = "";
   containers.forEach(container => {
     const li = document.createElement("li");
-    const statusClass = container.status === 'running' ? 'status-running' : 'status-stopped';
     li.innerHTML = `
-      <div>
-        <strong>${container.name}</strong>
-        <span class="status ${statusClass}">${container.status}</span>
-      </div>
-      <div>
-        <button class="start" onclick="manageContainer('${container.id}', 'start')">Start</button>
-        <button class="stop" onclick="manageContainer('${container.id}', 'stop')">Stop</button>
-      </div>
+      <strong>${container.name}</strong> 
+      <span class="status ${getStatusClass(container.status)}">${container.status}</span>
     `;
-    list.appendChild(li);
+    li.addEventListener("click", () => {
+      showContainerDetails(container);
+    });
+    sidebarList.appendChild(li);
   });
 }
 
+function updateSummary(containers) {
+  // Clear existing lists
+  const activeList = document.querySelector("#activeContainers .container-category");
+  const exitedList = document.querySelector("#exitedContainers .container-category");
+  const inactiveList = document.querySelector("#inactiveContainers .container-category");
+  activeList.innerHTML = "";
+  exitedList.innerHTML = "";
+  inactiveList.innerHTML = "";
+
+  containers.forEach(container => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <strong>${container.name}</strong> - 
+      <span class="status ${getStatusClass(container.status)}">${container.status}</span>
+    `;
+    li.addEventListener("click", () => {
+      showContainerDetails(container);
+    });
+    if (container.status === "running") {
+      activeList.appendChild(li);
+    } else if (container.status === "exited") {
+      exitedList.appendChild(li);
+    } else {
+      inactiveList.appendChild(li);
+    }
+  });
+}
+
+function getStatusClass(status) {
+  if (status === "running") return "status-running";
+  if (status === "exited") return "status-exited";
+  return "status-inactive";
+}
+
+function showContainerDetails(container) {
+  document.getElementById("summaryView").style.display = 'none';
+  const detailView = document.getElementById("detailView");
+  detailView.style.display = 'block';
+  const containerDetail = document.getElementById("containerDetail");
+  containerDetail.innerHTML = `
+    <h2>${container.name}</h2>
+    <p>Status: <span class="status ${getStatusClass(container.status)}">${container.status}</span></p>
+    <div>
+      <button class="start" onclick="manageContainer('${container.id}', 'start')">Start</button>
+      <button class="stop" onclick="manageContainer('${container.id}', 'stop')">Stop</button>
+    </div>
+  `;
+}
+
 async function manageContainer(id, action) {
-  showSpinner();
   try {
     const response = await fetch(`${API_URL}/${id}/${action}`, {
       method: "POST",
@@ -46,30 +94,17 @@ async function manageContainer(id, action) {
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
-
+    // After managing the container, refresh the list.
     fetchContainers();
   } catch (error) {
     console.error(`Failed to ${action} container:`, error);
-  } finally {
-    hideSpinner();
-  }
-}
-
-function showSpinner() {
-  const spinnerOverlay = document.createElement('div');
-  spinnerOverlay.className = 'spinner-overlay';
-  const spinner = document.createElement('div');
-  spinner.className = 'spinner';
-  spinnerOverlay.appendChild(spinner);
-  document.body.appendChild(spinnerOverlay);
-}
-
-function hideSpinner() {
-  const spinnerOverlay = document.querySelector('.spinner-overlay');
-  if (spinnerOverlay) {
-    spinnerOverlay.remove();
   }
 }
 
 document.getElementById("refresh").addEventListener("click", fetchContainers);
+document.getElementById("backBtn").addEventListener("click", () => {
+  document.getElementById("summaryView").style.display = 'block';
+  document.getElementById("detailView").style.display = 'none';
+});
+
 fetchContainers();

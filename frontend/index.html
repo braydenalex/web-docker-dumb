@@ -13,11 +13,37 @@
       <p class="description">Manage your Docker containers easily from this interface.</p>
       <button id="refresh" class="refresh-btn">Refresh</button>
     </header>
-    <section class="content">
-      <ul id="containerList" class="container-list"></ul>
-    </section>
+    <div class="main-wrapper">
+      <aside class="sidebar">
+        <h2>All Containers</h2>
+        <ul id="sidebarList" class="sidebar-list"></ul>
+      </aside>
+      <section class="content">
+        <div id="summaryView">
+          <h2>Container Summary</h2>
+          <div id="activeContainers">
+            <h3>Active</h3>
+            <ul class="container-category"></ul>
+          </div>
+          <div id="exitedContainers">
+            <h3>Exited</h3>
+            <ul class="container-category"></ul>
+          </div>
+          <div id="inactiveContainers">
+            <h3>Inactive</h3>
+            <ul class="container-category"></ul>
+          </div>
+        </div>
+        <div id="detailView" style="display: none;">
+          <button id="backBtn" class="back-btn">Back to Summary</button>
+          <div id="containerDetail"></div>
+        </div>
+      </section>
+    </div>
+    <footer>
+      <p>Docker Container Manager © 2025</p>
+    </footer>
   </div>
-
   <script src="script.js"></script>
 </body>
 </html>
