@@ -99,11 +99,31 @@ function showContainerDetails(container) {
   containerDetail.innerHTML = `
     <h2>${container.name}</h2>
     <p>Status: <span class="status ${getStatusClass(container.status)}">${container.status}</span></p>
-    <div>
+    <div class="controls">
       <button class="start" onclick="manageContainer('${container.id}', 'start')">Start</button>
       <button class="stop" onclick="manageContainer('${container.id}', 'stop')">Stop</button>
+      <button class="logs" onclick="viewLogs('${container.id}')">View Logs</button>
+    </div>
+    <div id="logsContainer" style="display:none;">
+      <h3>Logs</h3>
+      <pre id="logsOutput"></pre>
     </div>
   `;
+}
+
+async function viewLogs(containerId) {
+  const logsContainer = document.getElementById("logsContainer");
+  const logsOutput = document.getElementById("logsOutput");
+  logsOutput.textContent = "Loading logs...";
+  logsContainer.style.display = "block";
+  try {
+    const response = await fetch(`${API_URL}/${containerId}/logs`);
+    const data = await response.json();
+    logsOutput.textContent = data.logs;
+  } catch (error) {
+    logsOutput.textContent = "Failed to load logs.";
+    console.error("Failed to load logs for container", containerId, error);
+  }
 }
 
 async function manageContainer(id, action) {

@@ -55,6 +55,17 @@ def stop_container(container_id: str):
         raise HTTPException(status_code=404, detail="Container not found")
     except docker.errors.APIError as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/containers/{container_id}/logs")
+def get_container_logs(container_id: str):
+    try:
+        container = client.containers.get(container_id)
+        logs = container.logs(tail=100).decode("utf-8")
+        return {"logs": logs}
+    except docker.errors.NotFound:
+        raise HTTPException(status_code=404, detail="Container not found")
+    except docker.errors.APIError as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 frontend_path = os.path.join(os.path.dirname(__file__), "frontend_build")
 if os.path.exists(frontend_path):
