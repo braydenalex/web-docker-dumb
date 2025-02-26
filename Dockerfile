@@ -9,7 +9,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ /app/backend
 
 # Copy frontend to "frontend_build"
-# (Vanilla JS—no build step required, we just copy the files)
 COPY frontend/ /app/backend/frontend_build/
 
 # Expose port 8000
