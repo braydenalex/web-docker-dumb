@@ -45,12 +45,9 @@ services:
         condition: service_healthy
     environment:
       - DOCKER_HOST=tcp://docker-proxy:2375
-      - BASE_PATH=/web-docker-dumb
     ports:
       - "8000:8000"
 ```
-
-This would make the UI accessible at /web-docker-dumb, ignore the variable if you wish to use at its normal path.
 
 ## Building from Dockerfile
 
@@ -81,7 +78,6 @@ This would make the UI accessible at /web-docker-dumb, ignore the variable if yo
 ## Environment Variables
    ```
    DOCKER_HOST=
-   BASE_PATH=
    ```
 
 ## Usage

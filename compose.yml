@@ -26,6 +26,5 @@ services:
         condition: service_healthy
     environment:
       - DOCKER_HOST=tcp://docker-proxy:2375
-      - BASE_PATH=/services
     ports:
       - "8000:8000"

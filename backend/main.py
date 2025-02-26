@@ -8,9 +8,7 @@ from dotenv import load_dotenv
 # Load environment variables (docker-compose env vars override .env file)
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
-BASE_PATH = os.getenv("BASE_PATH", "").rstrip("/")
 DOCKER_HOST = os.getenv("DOCKER_HOST", "tcp://docker-proxy:2375")
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 
 client = docker.DockerClient(base_url=DOCKER_HOST)
 
@@ -24,7 +22,7 @@ app = FastAPI(
 # Allow CORS for frontend access.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=True
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
