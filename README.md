@@ -78,6 +78,8 @@ services:
 ## Environment Variables
    ```
    DOCKER_HOST=
+   ROOT_PATH=
+   API_BASE_PATH=
    ```
 
 ## Usage
