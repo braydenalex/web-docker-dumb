@@ -63,7 +63,7 @@ This would make the UI accessible at /web-docker-dumb, ignore the variable if yo
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/web-docker-dumb.git
+   git clone https://github.com/braydenalex/web-docker-dumb.git
    cd web-docker-dumb
    ```
 
