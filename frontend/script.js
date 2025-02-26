@@ -1,6 +1,7 @@
 const API_URL = `/containers`;
 
 async function fetchContainers() {
+  showSkeleton(); // Show the skeleton placeholders
   try {
     const response = await fetch(API_URL);
     const containers = await response.json();
@@ -8,6 +9,28 @@ async function fetchContainers() {
   } catch (error) {
     console.error("Failed to load containers", error);
   }
+}
+
+function showSkeleton() {
+  // Sidebar skeleton
+  const sidebarList = document.getElementById("sidebarList");
+  sidebarList.innerHTML = "";
+  for (let i = 0; i < 3; i++) {
+    const li = document.createElement("li");
+    li.className = "skeleton-item";
+    sidebarList.appendChild(li);
+  }
+  
+  // Summary skeleton for each category
+  const categories = document.querySelectorAll(".container-category");
+  categories.forEach(list => {
+    list.innerHTML = "";
+    for (let i = 0; i < 3; i++) {
+      const li = document.createElement("li");
+      li.className = "skeleton-item";
+      list.appendChild(li);
+    }
+  });
 }
 
 function renderUI(containers) {

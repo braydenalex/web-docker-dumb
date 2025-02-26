@@ -55,6 +55,12 @@ header .description {
   margin-top: 0;
 }
 
+.sidebar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
 .sidebar-list li {
   display: flex;
   align-items: center;
@@ -86,6 +92,7 @@ header .description {
 .container-category {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 .container-category li {
@@ -153,5 +160,105 @@ button {
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Skeleton styles */
+.skeleton-item {
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  height: 20px;
+  margin-bottom: 10px;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-color: #e0e0e0;
+  }
+  50% {
+    background-color: #f0f0f0;
+  }
+  100% {
+    background-color: #e0e0e0;
+  }
+}
+
+/* Responsive design for iPad devices */
+@media (max-width: 768px) {
+  .main-wrapper {
+    flex-direction: column;
+  }
+  .sidebar {
+    max-width: 100%;
+    width: 100%;
+    min-width: auto;
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+    padding: 15px;
+  }
+  .content {
+    padding: 15px;
+  }
+  header,
+  footer {
+    padding: 15px;
+  }
+
+  .sidebar-list li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .sidebar-list li .status {
+    align-self: flex-end;
+    margin-right: 50px;
+  }
+
+  .container-category li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .container-category li .status {
+    align-self: flex-end;
+    margin-right: 10px;
+  }
+}
+
+/* Responsive design for iPhone devices */
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 20px;
+  }
+  header .description {
+    font-size: 14px;
+  }
+  .refresh-btn {
+    padding: 8px 16px;
+  }
+  .sidebar h2 {
+    font-size: 18px;
+  }
+
+  .container-category li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .container-category li strong {
+    margin-right: 0;
+    margin-bottom: 5px;
+    white-space: normal;
+  }
+  .container-category li .status {
+    align-self: flex-end;
+    margin-right: 10px;
+  }
+
+  .sidebar-list li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .sidebar-list li .status {
+    align-self: flex-end;
+    margin-right: 10px;
   }
 }
