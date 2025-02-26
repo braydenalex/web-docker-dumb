@@ -39,8 +39,7 @@ services:
       start_period: 2s
 
   web-docker-dumb:
-    build: .
-    container_name: web-docker-dumb
+    image: braydennn/web-docker-dumb:latest
     depends_on:
       docker-proxy:
         condition: service_healthy
