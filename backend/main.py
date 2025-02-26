@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 
+# Load environment variables (docker-compose env vars override .env file)
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
 BASE_PATH = os.getenv("BASE_PATH", "").rstrip("/")
@@ -15,12 +16,13 @@ client = docker.DockerClient(base_url=DOCKER_HOST)
 
 app = FastAPI(
     title="web-docker-dumb API",
-    openapi_url="/openapi.json",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    openapi_url=f"{BASE_PATH}/openapi.json" if BASE_PATH else "/openapi.json",
+    docs_url=f"{BASE_PATH}/docs" if BASE_PATH else "/docs",
+    redoc_url=f"{BASE_PATH}/redoc" if BASE_PATH else "/redoc",
+    root_path=BASE_PATH,
 )
 
-# Allow CORS for frontend access
+# Allow CORS for frontend access.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -67,6 +69,7 @@ def get_container_logs(container_id: str):
     except docker.errors.APIError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Mount static files for the frontend.
 frontend_path = os.path.join(os.path.dirname(__file__), "frontend_build")
 if os.path.exists(frontend_path):
-    app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
+    app.mount(BASE_PATH if BASE_PATH else "/", StaticFiles(directory=frontend_path, html=True), name="frontend")

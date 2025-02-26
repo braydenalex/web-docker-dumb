@@ -3,7 +3,6 @@ services:
     image: tecnativa/docker-socket-proxy
     container_name: docker-proxy
     restart: always
-    privileged: true
     ports:
       - "2375:2375"
     volumes:
@@ -27,5 +26,6 @@ services:
         condition: service_healthy
     environment:
       - DOCKER_HOST=tcp://docker-proxy:2375
+      - BASE_PATH=
     ports:
       - "8000:8000"
