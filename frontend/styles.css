@@ -43,7 +43,7 @@ header .description {
 .sidebar {
   flex: 0 1 auto;
   width: auto;
-  min-width: 250px;
+  min-width: 325px;
   max-width: 500px;
   background-color: #f0f4f8;
   padding: 20px;
