@@ -12,6 +12,14 @@
       <h1>web-docker-dumb</h1>
       <p class="description">A dumb UI for smart people.</p>
       <button id="refresh" class="refresh-btn">Refresh</button>
+      <div class="refresh-interval-container">
+        <label for="refreshInterval">Refresh every (minutes):</label>
+        <input type="number" id="refreshInterval" value="2" min="1" class="refresh-interval" />
+        <label class="toggle">
+          <input type="checkbox" id="autoRefreshToggle" checked />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
     </header>
     <div class="main-wrapper">
       <aside class="sidebar">

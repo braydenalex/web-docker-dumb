@@ -1,5 +1,7 @@
 const API_URL = `/containers`;
 
+let refreshIntervalId;
+
 async function fetchContainers() {
   showSkeleton(); // Show the skeleton placeholders
   try {
@@ -144,7 +146,35 @@ async function manageContainer(id, action) {
   }
 }
 
+// Function to start automatic refresh
+function startAutoRefresh() {
+  const intervalInput = document.getElementById("refreshInterval");
+  const interval = parseInt(intervalInput.value) * 60 * 1000; // Convert minutes to milliseconds
+  fetchContainers(); // Initial fetch
+  refreshIntervalId = setInterval(fetchContainers, interval);
+}
+
+// Event listener for refresh button
 document.getElementById("refresh").addEventListener("click", fetchContainers);
+
+// Event listener for refresh interval change
+document.getElementById("refreshInterval").addEventListener("change", () => {
+  clearInterval(refreshIntervalId); // Clear existing interval
+  startAutoRefresh(); // Restart with new interval
+});
+
+// Event listener for the auto-refresh toggle
+document.getElementById("autoRefreshToggle").addEventListener("change", (event) => {
+  if (event.target.checked) {
+    startAutoRefresh(); // Restart auto-refresh if checked
+  } else {
+    clearInterval(refreshIntervalId); // Stop auto-refresh if unchecked
+  }
+});
+
+// Start auto-refresh on page load
+startAutoRefresh();
+
 document.getElementById("backBtn").addEventListener("click", () => {
   document.getElementById("summaryView").style.display = 'block';
   document.getElementById("detailView").style.display = 'none';
