@@ -22,9 +22,9 @@ function showSkeleton() {
     li.className = "skeleton-item";
     sidebarList.appendChild(li);
   }
-  
+
   // Summary skeleton for each category
-  const categories = document.querySelectorAll(".container-category");
+  const categories = document.querySelectorAll(".container-list");
   categories.forEach(list => {
     list.innerHTML = "";
     for (let i = 0; i < 3; i++) {
@@ -39,8 +39,7 @@ function renderUI(containers) {
   updateSidebar(containers);
   updateSummary(containers);
   // Ensure the summary view is visible and detail view is hidden.
-  document.getElementById("summaryView").style.display = 'block';
-  document.getElementById("detailView").style.display = 'none';
+  switchView('summary');
 }
 
 function updateSidebar(containers) {
@@ -49,8 +48,8 @@ function updateSidebar(containers) {
   containers.forEach(container => {
     const li = document.createElement("li");
     li.innerHTML = `
-      <strong>${container.name}</strong> 
-      <span class="status ${getStatusClass(container.status)}">${container.status}</span>
+      <span>${container.name}</span>
+      <span class="status-dot ${container.status}"></span>
     `;
     li.addEventListener("click", () => {
       showContainerDetails(container);
@@ -61,9 +60,9 @@ function updateSidebar(containers) {
 
 function updateSummary(containers) {
   // Clear existing lists
-  const activeList = document.querySelector("#activeContainers .container-category");
-  const exitedList = document.querySelector("#exitedContainers .container-category");
-  const inactiveList = document.querySelector("#inactiveContainers .container-category");
+  const activeList = document.querySelector("#activeContainers .container-list");
+  const exitedList = document.querySelector("#exitedContainers .container-list");
+  const inactiveList = document.querySelector("#inactiveContainers .container-list");
   activeList.innerHTML = "";
   exitedList.innerHTML = "";
   inactiveList.innerHTML = "";
@@ -71,8 +70,11 @@ function updateSummary(containers) {
   containers.forEach(container => {
     const li = document.createElement("li");
     li.innerHTML = `
-      <strong>${container.name}</strong> - 
-      <span class="status ${getStatusClass(container.status)}">${container.status}</span>
+      <strong>${container.name}</strong>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem; font-size:0.85rem; color:#94a3b8;">
+        <span>${container.image || 'Image'}</span>
+        <span class="status-dot ${container.status}" title="${container.status}"></span>
+      </div>
     `;
     li.addEventListener("click", () => {
       showContainerDetails(container);
@@ -94,21 +96,31 @@ function getStatusClass(status) {
 }
 
 function showContainerDetails(container) {
-  document.getElementById("summaryView").style.display = 'none';
-  const detailView = document.getElementById("detailView");
-  detailView.style.display = 'block';
+  switchView('detail');
   const containerDetail = document.getElementById("containerDetail");
   containerDetail.innerHTML = `
     <h2>${container.name}</h2>
-    <p>Status: <span class="status ${getStatusClass(container.status)}">${container.status}</span></p>
-    <div class="controls">
-      <button class="start" onclick="manageContainer('${container.id}', 'start')">Start</button>
-      <button class="stop" onclick="manageContainer('${container.id}', 'stop')">Stop</button>
-      <button class="logs" onclick="viewLogs('${container.id}')">View Logs</button>
+    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1.5rem; color:#94a3b8;">
+      Status: <span class="status-dot ${container.status}"></span> <span style="color:#f1f5f9; text-transform:capitalize;">${container.status}</span>
     </div>
-    <div id="logsContainer" style="display:none;">
-      <h3>Logs</h3>
-      <pre id="logsOutput"></pre>
+    
+    <div class="controls">
+      <button class="btn btn-action btn-start" onclick="manageContainer('${container.id}', 'start')">Start</button>
+      <button class="btn btn-action btn-stop" onclick="manageContainer('${container.id}', 'stop')">Stop</button>
+      <button class="btn btn-action btn-logs" onclick="viewLogs('${container.id}')">View Logs</button>
+    </div>
+    <div id="logsContainer" class="logs-container" style="display:none;">
+      <div class="log-header">
+        <h3 style="margin:0; color:#fff; font-size:0.9rem;">Logs</h3>
+        <div class="log-toolbar">
+          <button class="toolbar-btn" onclick="toggleLogWrap(this)" title="Toggle Wrap">Wrap</button>
+          <button class="toolbar-btn" onclick="changeLogFontSize(-1)" title="Smaller Text">A-</button>
+          <button class="toolbar-btn" onclick="changeLogFontSize(1)" title="Larger Text">A+</button>
+          <button class="toolbar-btn" onclick="downloadLogs('${container.name}')" title="Download Logs">⬇</button>
+          <button class="toolbar-btn" onclick="toggleLogFullscreen()" title="Fullscreen">⛶</button>
+        </div>
+      </div>
+      <pre id="logsOutput" class="log-wrap"></pre>
     </div>
   `;
 }
@@ -146,6 +158,46 @@ async function manageContainer(id, action) {
   }
 }
 
+// Log Features
+let currentLogSize = 13;
+
+function toggleLogFullscreen() {
+  const container = document.getElementById('logsContainer');
+  container.classList.toggle('logs-fullscreen');
+}
+
+function changeLogFontSize(delta) {
+  const output = document.getElementById('logsOutput');
+  currentLogSize = Math.max(10, Math.min(24, currentLogSize + delta));
+  output.style.fontSize = `${currentLogSize}px`;
+}
+
+function toggleLogWrap(btn) {
+  const output = document.getElementById('logsOutput');
+  if (output.classList.contains('log-wrap')) {
+    output.classList.remove('log-wrap');
+    output.classList.add('log-nowrap');
+    btn.classList.add('active');
+    btn.textContent = "No Wrap";
+  } else {
+    output.classList.remove('log-nowrap');
+    output.classList.add('log-wrap');
+    btn.classList.remove('active');
+    btn.textContent = "Wrap";
+  }
+}
+
+function downloadLogs(containerName) {
+  const text = document.getElementById('logsOutput').textContent;
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${containerName}-${new Date().toISOString()}.log`;
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+
 // Function to start automatic refresh
 function startAutoRefresh() {
   const intervalInput = document.getElementById("refreshInterval");
@@ -153,6 +205,51 @@ function startAutoRefresh() {
   fetchContainers(); // Initial fetch
   refreshIntervalId = setInterval(fetchContainers, interval);
 }
+
+// Incrementor Logic
+const intervalInput = document.getElementById("refreshInterval");
+document.getElementById("decInterval").addEventListener("click", () => {
+  let val = parseInt(intervalInput.value) || 1;
+  if (val > 1) {
+    intervalInput.value = val - 1;
+    intervalInput.dispatchEvent(new Event('change'));
+  }
+});
+document.getElementById("incInterval").addEventListener("click", () => {
+  let val = parseInt(intervalInput.value) || 1;
+  intervalInput.value = val + 1;
+  intervalInput.dispatchEvent(new Event('change'));
+});
+
+// Sidebar Resizer
+const sidebar = document.querySelector('.dashboard-grid');
+const resizer = document.getElementById('sidebarResizer');
+let isResizing = false;
+
+resizer.addEventListener('mousedown', (e) => {
+  isResizing = true;
+  resizer.classList.add('resizing');
+  document.body.style.cursor = 'col-resize';
+  document.body.style.userSelect = 'none';
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!isResizing) return;
+  const newWidth = e.clientX;
+  if (newWidth > 200 && newWidth < 600) {
+    sidebar.style.setProperty('--sidebar-width', `${newWidth}px`);
+  }
+});
+
+document.addEventListener('mouseup', () => {
+  if (isResizing) {
+    isResizing = false;
+    resizer.classList.remove('resizing');
+    document.body.style.cursor = 'default';
+    document.body.style.userSelect = '';
+  }
+});
+
 
 // Event listener for refresh button
 document.getElementById("refresh").addEventListener("click", fetchContainers);
@@ -176,8 +273,22 @@ document.getElementById("autoRefreshToggle").addEventListener("change", (event) 
 startAutoRefresh();
 
 document.getElementById("backBtn").addEventListener("click", () => {
-  document.getElementById("summaryView").style.display = 'block';
-  document.getElementById("detailView").style.display = 'none';
+  switchView('summary');
 });
+
+function switchView(viewName) {
+  const summaryView = document.getElementById("summaryView");
+  const detailView = document.getElementById("detailView");
+
+  if (viewName === 'summary') {
+    summaryView.classList.remove('active');
+    detailView.classList.remove('active');
+    summaryView.classList.add('active');
+  } else {
+    summaryView.classList.remove('active');
+    detailView.classList.remove('active');
+    detailView.classList.add('active');
+  }
+}
 
 fetchContainers();

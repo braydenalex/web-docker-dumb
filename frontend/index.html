@@ -1,55 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>web-docker-dumb</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2" />
 </head>
+
 <body>
-  <div class="container">
-    <header>
-      <h1>web-docker-dumb</h1>
-      <p class="description">A dumb UI for smart people.</p>
-      <button id="refresh" class="refresh-btn">Refresh</button>
-      <div class="refresh-interval-container">
-        <label for="refreshInterval">Refresh every (minutes):</label>
-        <input type="number" id="refreshInterval" value="2" min="1" class="refresh-interval" />
-        <label class="toggle">
-          <input type="checkbox" id="autoRefreshToggle" checked />
-          <span class="toggle-slider"></span>
-        </label>
+  <div class="dashboard-grid">
+    <aside class="sidebar-nav" id="sidebar">
+      <div class="sidebar-header">
+        <h2>web-docker-<span class="highlight">dumb</span></h2>
       </div>
-    </header>
-    <div class="main-wrapper">
-      <aside class="sidebar">
-        <h2>All Containers</h2>
-        <ul id="sidebarList" class="sidebar-list"></ul>
-      </aside>
-      <section class="content">
-        <div id="summaryView">
-          <h2>Container Summary</h2>
-          <div id="activeContainers">
-            <h3>Active</h3>
-            <ul class="container-category"></ul>
+      <div class="sidebar-content">
+        <ul id="sidebarList" class="nav-list"></ul>
+      </div>
+      <div class="resizer" id="sidebarResizer"></div>
+    </aside>
+
+    <main class="content-wrapper">
+      <header class="top-bar">
+        <h1 class="page-title">Dashboard</h1>
+        <div class="header-controls">
+          <button id="refresh" class="btn btn-icon" title="Refresh">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 4v6h-6"></path>
+              <path d="M1 20v-6h6"></path>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+          </button>
+
+          <div class="control-group">
+            <span class="label">Interval</span>
+            <div class="incrementor">
+              <button id="decInterval" class="inc-btn">-</button>
+              <input type="number" id="refreshInterval" value="2" min="1" class="inc-display" readonly />
+              <button id="incInterval" class="inc-btn">+</button>
+            </div>
+            <span class="label">min</span>
           </div>
-          <div id="exitedContainers">
-            <h3>Exited</h3>
-            <ul class="container-category"></ul>
-          </div>
-          <div id="inactiveContainers">
-            <h3>Inactive</h3>
-            <ul class="container-category"></ul>
+
+          <div class="control-group">
+            <label class="toggle-switch">
+              <input type="checkbox" id="autoRefreshToggle" checked />
+              <span class="slider"></span>
+            </label>
+            <span class="label">Auto</span>
           </div>
         </div>
-        <div id="detailView" style="display: none;">
-          <button id="backBtn" class="back-btn">Back to Summary</button>
-          <div id="containerDetail"></div>
+      </header>
+
+      <div id="contentArea">
+        <!-- Summary View -->
+        <div id="summaryView" class="view-pane active">
+          <div class="dashboard-section">
+            <div class="section-header">
+              <h3>Active Containers</h3>
+              <span class="status-dot running"></span>
+            </div>
+            <div id="activeContainers" class="card-grid">
+              <ul class="container-list"></ul>
+            </div>
+          </div>
+
+          <div class="dashboard-section">
+            <div class="section-header">
+              <h3>Exited Containers</h3>
+              <span class="status-dot exited"></span>
+            </div>
+            <div id="exitedContainers" class="card-grid">
+              <ul class="container-list"></ul>
+            </div>
+          </div>
+
+          <div class="dashboard-section">
+            <div class="section-header">
+              <h3>Inactive / Other</h3>
+              <span class="status-dot inactive"></span>
+            </div>
+            <div id="inactiveContainers" class="card-grid">
+              <ul class="container-list"></ul>
+            </div>
+          </div>
         </div>
-      </section>
-    </div>
+
+        <!-- Detail View -->
+        <div id="detailView" class="view-pane">
+          <button id="backBtn" class="btn btn-text">← Back to Dashboard</button>
+          <div id="containerDetail" class="detail-panel"></div>
+        </div>
+      </div>
+    </main>
   </div>
   <script src="config.js"></script>
   <script src="script.js"></script>
 </body>
+
 </html>
