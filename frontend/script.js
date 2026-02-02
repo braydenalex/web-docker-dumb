@@ -250,6 +250,38 @@ document.addEventListener('mouseup', () => {
   }
 });
 
+// Mobile Sidebar Toggle
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const sidebarNav = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+function toggleSidebar() {
+  sidebarNav.classList.toggle('open');
+  sidebarOverlay.classList.toggle('active');
+}
+
+function closeSidebar() {
+  sidebarNav.classList.remove('open');
+  sidebarOverlay.classList.remove('active');
+}
+
+hamburgerBtn.addEventListener('click', toggleSidebar);
+sidebarOverlay.addEventListener('click', closeSidebar);
+
+// Close sidebar when a nav item is clicked (mobile)
+document.getElementById('sidebarList').addEventListener('click', () => {
+  if (window.innerWidth <= 768) {
+    closeSidebar();
+  }
+});
+
+// Close sidebar on window resize if switching to desktop
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 768) {
+    closeSidebar();
+  }
+});
+
 
 // Event listener for refresh button
 document.getElementById("refresh").addEventListener("click", fetchContainers);
