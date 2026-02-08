@@ -148,7 +148,6 @@ body {
   justify-content: space-between;
   padding: 0 2rem;
   background-color: var(--bg-dark);
-  /* Keeps header cohesive with body */
 }
 
 .page-title {
@@ -319,7 +318,6 @@ body {
   font-family: var(--font-mono);
   font-size: 0.85rem;
   max-width: 100%;
-  /* Prevent it from pushing parents wide */
 }
 
 #logsOutput {
@@ -731,7 +729,7 @@ input:checked+.slider:before {
     margin-bottom: 0.75rem;
   }
 
-  /* Control buttons - stack on mobile */
+  /* Control buttons, stack on mobile */
   .controls {
     display: flex;
     flex-wrap: wrap;

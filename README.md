@@ -16,7 +16,7 @@ Every tool, even "lightweight" ones had too many features. I hated using GUI's t
 
 ## Why Use Docker Proxy?
 
-In this project, we utilize the `tecnativa/docker-socket-proxy` for the following reasons:
+In this project, I utilize the `tecnativa/docker-socket-proxy` for the following reasons:
 
 - **Security**: Directly exposing the Docker socket to a web application can pose significant security risks. The proxy helps mitigate these risks by controlling access to the Docker API.
 

@@ -3,7 +3,7 @@ const API_URL = `/containers`;
 let refreshIntervalId;
 
 async function fetchContainers() {
-  showSkeleton(); // Show the skeleton placeholders
+  showSkeleton(); 
   try {
     const response = await fetch(API_URL);
     const containers = await response.json();
@@ -38,7 +38,6 @@ function showSkeleton() {
 function renderUI(containers) {
   updateSidebar(containers);
   updateSummary(containers);
-  // Ensure the summary view is visible and detail view is hidden.
   switchView('summary');
 }
 
@@ -59,7 +58,6 @@ function updateSidebar(containers) {
 }
 
 function updateSummary(containers) {
-  // Clear existing lists
   const activeList = document.querySelector("#activeContainers .container-list");
   const exitedList = document.querySelector("#exitedContainers .container-list");
   const inactiveList = document.querySelector("#inactiveContainers .container-list");
@@ -151,7 +149,6 @@ async function manageContainer(id, action) {
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
-    // After managing the container, refresh the list.
     fetchContainers();
   } catch (error) {
     console.error(`Failed to ${action} container:`, error);
@@ -198,15 +195,13 @@ function downloadLogs(containerName) {
   window.URL.revokeObjectURL(url);
 }
 
-// Function to start automatic refresh
 function startAutoRefresh() {
   const intervalInput = document.getElementById("refreshInterval");
-  const interval = parseInt(intervalInput.value) * 60 * 1000; // Convert minutes to milliseconds
-  fetchContainers(); // Initial fetch
+  const interval = parseInt(intervalInput.value) * 60 * 1000; // mins to ms
+  fetchContainers();
   refreshIntervalId = setInterval(fetchContainers, interval);
 }
 
-// Incrementor Logic
 const intervalInput = document.getElementById("refreshInterval");
 document.getElementById("decInterval").addEventListener("click", () => {
   let val = parseInt(intervalInput.value) || 1;
@@ -268,7 +263,7 @@ function closeSidebar() {
 hamburgerBtn.addEventListener('click', toggleSidebar);
 sidebarOverlay.addEventListener('click', closeSidebar);
 
-// Close sidebar when a nav item is clicked (mobile)
+// Close sidebar mobile
 document.getElementById('sidebarList').addEventListener('click', () => {
   if (window.innerWidth <= 768) {
     closeSidebar();
@@ -283,21 +278,19 @@ window.addEventListener('resize', () => {
 });
 
 
-// Event listener for refresh button
 document.getElementById("refresh").addEventListener("click", fetchContainers);
 
-// Event listener for refresh interval change
 document.getElementById("refreshInterval").addEventListener("change", () => {
-  clearInterval(refreshIntervalId); // Clear existing interval
-  startAutoRefresh(); // Restart with new interval
+  clearInterval(refreshIntervalId);
+  startAutoRefresh();
 });
 
 // Event listener for the auto-refresh toggle
 document.getElementById("autoRefreshToggle").addEventListener("change", (event) => {
   if (event.target.checked) {
-    startAutoRefresh(); // Restart auto-refresh if checked
+    startAutoRefresh();
   } else {
-    clearInterval(refreshIntervalId); // Stop auto-refresh if unchecked
+    clearInterval(refreshIntervalId);
   }
 });
 

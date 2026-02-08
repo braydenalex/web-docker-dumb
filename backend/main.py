@@ -6,12 +6,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import Response
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
 DOCKER_HOST = os.getenv("DOCKER_HOST", "tcp://docker-proxy:2375")
 ROOT_PATH = os.getenv("ROOT_PATH", "")
-API_BASE_PATH = os.getenv("API_BASE_PATH", "") # also used in frontend
+API_BASE_PATH = os.getenv("API_BASE_PATH", "")
 
 client = docker.DockerClient(base_url=DOCKER_HOST)
 
@@ -23,7 +22,6 @@ app = FastAPI(
     redoc_url=f"{ROOT_PATH}/redoc" if ROOT_PATH else "/redoc",
 )
 
-# Allow CORS for frontend access.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -32,7 +30,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# API endpoints remain unchanged.
 @app.get("/containers")
 def list_containers():
     containers = client.containers.list(all=True)
@@ -73,10 +70,8 @@ def get_container_logs(container_id: str):
 
 @app.get("/config.js", include_in_schema=False)
 def get_config_js():
-    # This value comes from your Docker Compose .env via the container environment.
     return Response(content=f"window.API_BASE_PATH = '{API_BASE_PATH}';", media_type="application/javascript")
 
-# Mount static files.
 frontend_path = os.path.join(os.path.dirname(__file__), "frontend_build")
 if os.path.exists(frontend_path):
     mount_path = ROOT_PATH if ROOT_PATH else "/"
