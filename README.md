@@ -84,7 +84,15 @@ services:
    DOCKER_HOST=
    ROOT_PATH=
    API_BASE_PATH=
+   DOCKER_TIMEOUT_SECONDS=10
+   LOG_TAIL_LINES=200
+   ALLOWED_ORIGINS=
+   ALLOWED_HOSTS=localhost,127.0.0.1
+   ENABLE_DOCS=true
+   LOG_LEVEL=INFO
    ```
+   
+`ALLOWED_ORIGINS` is empty by default, which means cross-origin requests are not permitted unless explicitly enabled.
 
 ## Usage
 

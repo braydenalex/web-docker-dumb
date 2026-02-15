@@ -28,7 +28,7 @@
 
     <main class="content-wrapper">
       <header class="top-bar">
-        <button id="hamburgerBtn" class="hamburger-btn" title="Toggle Menu">
+        <button id="hamburgerBtn" class="hamburger-btn" type="button" title="Toggle Menu" aria-label="Toggle navigation menu" aria-expanded="false">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="3" y1="6" x2="21" y2="6"></line>
             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -37,7 +37,7 @@
         </button>
         <h1 class="page-title">Dashboard</h1>
         <div class="header-controls">
-          <button id="refresh" class="btn btn-icon" title="Refresh">
+          <button id="refresh" class="btn btn-icon" type="button" title="Refresh" aria-label="Refresh container list">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M23 4v6h-6"></path>
               <path d="M1 20v-6h6"></path>
@@ -48,9 +48,9 @@
           <div class="control-group">
             <span class="label">Interval</span>
             <div class="incrementor">
-              <button id="decInterval" class="inc-btn">-</button>
+              <button id="decInterval" class="inc-btn" type="button" aria-label="Decrease refresh interval">-</button>
               <input type="number" id="refreshInterval" value="2" min="1" class="inc-display" readonly />
-              <button id="incInterval" class="inc-btn">+</button>
+              <button id="incInterval" class="inc-btn" type="button" aria-label="Increase refresh interval">+</button>
             </div>
             <span class="label">min</span>
           </div>
@@ -66,6 +66,7 @@
       </header>
 
       <div id="contentArea">
+        <div id="messageBar" class="message-bar" role="status" aria-live="polite"></div>
         <!-- Summary View -->
         <div id="summaryView" class="view-pane active">
           <div class="dashboard-section">
@@ -101,7 +102,7 @@
 
         <!-- Detail View -->
         <div id="detailView" class="view-pane">
-          <button id="backBtn" class="btn btn-text">← Back to Dashboard</button>
+          <button id="backBtn" class="btn btn-text" type="button">← Back to Dashboard</button>
           <div id="containerDetail" class="detail-panel"></div>
         </div>
       </div>
