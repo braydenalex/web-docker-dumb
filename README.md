@@ -1,115 +1,73 @@
 # web-docker-dumb
 
-## Overview
+A small Docker dashboard for people who already use Docker and Compose. Browse containers by Compose project, search by name or image, start and stop containers, and read timestamped logs.
 
-**web-docker-dumb** is a simple web-based user interface designed for users who are already familiar with Docker and Docker Compose command-line tools. This project aims to provide a basic set of features to manage Docker containers remotely.
+## Run locally
 
-## Why?
+With Docker and Docker Compose installed, run this from the repository root.
 
-Every tool, even "lightweight" ones had too many features. I hated using GUI's to manipulate compose files as I couldn't see exactly what they were doing.
-
-## Features
-
-- **View All Containers**: Easily view a list of all Docker containers, including their status and basic details.
-- **Start and Stop Containers**: Manage the lifecycle of your containers with simple start and stop controls.
-- **View Logs**: Access the logs of your containers to monitor their output and diagnose issues.
-
-## Why Use Docker Proxy?
-
-In this project, I utilize the `tecnativa/docker-socket-proxy` for the following reasons:
-
-- **Security**: Directly exposing the Docker socket to a web application can pose significant security risks. The proxy helps mitigate these risks by controlling access to the Docker API.
-
-## Building using Docker Compose
+```sh
+docker compose up -d --build
 ```
+
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000). The dashboard binds to the host's loopback interface, and the Docker socket proxy is reachable only on a private Compose network shared with the backend. The pinned [LinuxServer socket proxy](https://docs.linuxserver.io/images/docker-socket-proxy/) permits container reads and explicitly allows start and stop with general writes disabled.
+
+If you copied an older Compose example, remove the proxy's published `2375` port and apply the updated configuration. This repository's `compose.yml` is the deployment example.
+
+The refresh timestamp shows when the container list was last loaded successfully. If a refresh fails, the previous list remains visible and container actions wait for a successful refresh. The log panel shows the configured line limit, adds Docker timestamps, and indicates when the byte cap cuts off output. You can refresh, copy, or download the displayed logs.
+
+## Remote access
+
+Keep the dashboard port bound to loopback. For a single administrator with SSH access, forward the dashboard port and open it locally.
+
+```sh
+ssh -N -L 8000:127.0.0.1:8000 your-docker-host
+```
+
+For browser access by multiple people, use an authenticated HTTPS reverse proxy or a private VPN with access controls. A host-based reverse proxy can reach `127.0.0.1:8000`. Protect the entire site, including `/containers` and all its subpaths. Set `ALLOWED_HOSTS` to include the public hostname and `ALLOWED_ORIGINS` to the exact external origin if TLS terminates before the app. The proxy should preserve the original `Host` header. If using forwarded scheme headers, set `FORWARDED_ALLOW_IPS` to the trusted proxy IP as seen by the application.
+
+You can let the reverse proxy handle authentication or set both `APP_USERNAME` and `APP_PASSWORD` to enable HTTP Basic authentication for the UI and API. Use HTTPS for remote Basic authentication.
+
+## Limit the dashboard to selected containers
+
+Set `MANAGED_ONLY=true` and add this label to each workload that the dashboard should manage. Recreate those workload containers so the label takes effect.
+
+```yaml
 services:
-  docker-proxy:
-    image: tecnativa/docker-socket-proxy
-    container_name: docker-proxy
-    restart: always
-    ports:
-      - "2375:2375"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      PING: "1"
-      CONTAINERS: "1"
-      POST: "1"
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:2375/_ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-      start_period: 2s
-
-  web-docker-dumb:
-    image: braydennn/web-docker-dumb:latest
-    depends_on:
-      docker-proxy:
-        condition: service_healthy
-    environment:
-      - DOCKER_HOST=tcp://docker-proxy:2375
-    ports:
-      - "8000:8000"
+  example:
+    labels:
+      web-docker-dumb.manage: "true"
 ```
 
-## Building from Dockerfile
+While enabled, the label controls listing, logs, and start and stop on the backend. This keeps other workloads and the dashboard's own infrastructure out of the UI.
 
-### Prerequisites
+## Configuration
 
-- Docker
-- Docker Compose
+Set values in your shell or in a `.env` file in the repository root before running Compose. A direct Python launch also reads `backend/.env`. Keep credential-bearing `.env` files local.
 
-### Installation
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `WEB_PORT` | `8000` | Host loopback port for Compose |
+| `APP_USERNAME`, `APP_PASSWORD` | Empty | Enable HTTP Basic authentication when both are set |
+| `MANAGED_ONLY` | `false` | Require `web-docker-dumb.manage=true` on each accessible container |
+| `ALLOWED_HOSTS` | `localhost,127.0.0.1` | Comma-separated hostnames accepted by the backend |
+| `ALLOWED_ORIGINS` | Empty | Explicit browser origins allowed for cross-origin requests, including writes |
+| `FORWARDED_ALLOW_IPS` | `127.0.0.1` | IPs Uvicorn trusts for forwarded headers |
+| `ROOT_PATH` | Empty | External URL prefix, such as `/docker`, when a reverse proxy strips that prefix |
+| `API_BASE_PATH` | `ROOT_PATH` | Optional override for the same-origin API prefix |
+| `DOCKER_HOST` | `tcp://docker-proxy:2375` | Docker endpoint. The supplied Compose file sets this to its private proxy |
+| `DOCKER_TIMEOUT_SECONDS` | `10` | Docker SDK HTTP timeout in seconds |
+| `STOP_GRACE_SECONDS` | Docker default | Optional override for the container's normal graceful stop timeout |
+| `LOG_TAIL_LINES` | `200` | Docker log tail limit, clamped to 10–1000 lines |
+| `LOG_MAX_BYTES` | `262144` | Maximum Docker log bytes collected per request, clamped to 1 KiB–1 MiB |
+| `ENABLE_DOCS` | `false` | Expose the OpenAPI schema at `/openapi.json` |
+| `LOG_LEVEL` | `INFO` | Backend log level |
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/braydenalex/web-docker-dumb.git
-   cd web-docker-dumb
-   ```
+## Update dependencies
 
-2. Set up the environment variables:
-   - Create a `.env` file in the `backend` directory with the necessary configurations. Refer to the `.env.example` for guidance.
+The image uses Python 3.13 and installs the pinned runtime dependencies from `backend/requirements.txt`. Update the lock and audit it with the following commands.
 
-3. Start the application using Docker Compose:
-   ```bash
-   docker-compose up -d
-   ```
-
-4. Access the UI:
-   - Open your web browser and navigate to `http://localhost:8000` to start using the application.
-  
-## Environment Variables
-   ```
-   DOCKER_HOST=
-   ROOT_PATH=
-   API_BASE_PATH=
-   DOCKER_TIMEOUT_SECONDS=10
-   LOG_TAIL_LINES=200
-   ALLOWED_ORIGINS=
-   ALLOWED_HOSTS=localhost,127.0.0.1
-   ENABLE_DOCS=true
-   LOG_LEVEL=INFO
-   ```
-   
-`ALLOWED_ORIGINS` is empty by default, which means cross-origin requests are not permitted unless explicitly enabled.
-
-## Usage
-
-- **Refresh the Container List**: Click the "Refresh" button to update the list of containers.
-- **View Container Details**: Click on a container name to view its details and available actions.
-- **Manage Containers**: Use the "Start" and "Stop" buttons to control the container's state.
-- **View Logs**: Click "View Logs" to see the container's output.
-
-## Code Structure
-
-- **Frontend**: Contains the HTML and JavaScript files for the user interface.
-  - `index.html`: The main HTML file for the UI.
-  - `script.js`: JavaScript file handling UI interactions and API calls.
-
-- **Backend**: Built with FastAPI to interact with Docker.
-  - `main.py`: The main API file that handles requests to list, start, stop, and fetch logs of containers.
-
-## Contributing
-
-Contributions are welcome! Please fork the repository and submit a pull request for any improvements or bug fixes.
+```sh
+uv pip compile --universal --python-version 3.13 --upgrade backend/requirements.in -o backend/requirements.txt
+uvx --python 3.13 pip-audit --disable-pip --no-deps -r backend/requirements.txt
+```
