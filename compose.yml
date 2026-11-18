@@ -1,18 +1,25 @@
 services:
   docker-proxy:
-    image: tecnativa/docker-socket-proxy
-    container_name: docker-proxy
-    restart: always
-    ports:
-      - "2375:2375"
+    image: lscr.io/linuxserver/socket-proxy:latest@sha256:18289eeb306e8e3b70901ffec23eafbb318d73b4514d0bd737dbfc7c5b4fe506
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /run
+    networks:
+      - docker-api
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       PING: "1"
+      VERSION: "1"
+      EVENTS: "0"
       CONTAINERS: "1"
-      POST: "1"
+      ALLOW_LOGS: "1"
+      POST: "0"
+      ALLOW_START: "1"
+      ALLOW_STOP: "1"
     healthcheck:
-      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:2375/_ping"]
+      test: ["CMD", "wget", "--spider", "--quiet", "http://127.0.0.1:2375/_ping"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -20,13 +27,37 @@ services:
 
   web-docker-dumb:
     build: .
-    container_name: web-docker-dumb
+    restart: unless-stopped
     depends_on:
       docker-proxy:
         condition: service_healthy
+    networks:
+      - default
+      - docker-api
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     environment:
-      - DOCKER_HOST=tcp://docker-proxy:2375
-      - ROOT_PATH=
-      - API_BASE_PATH=
+      DOCKER_HOST: tcp://docker-proxy:2375
+      ROOT_PATH: ${ROOT_PATH:-}
+      API_BASE_PATH: ${API_BASE_PATH:-}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-127.0.0.1}
+      APP_USERNAME: ${APP_USERNAME:-}
+      APP_PASSWORD: ${APP_PASSWORD:-}
+      MANAGED_ONLY: ${MANAGED_ONLY:-false}
+      DOCKER_TIMEOUT_SECONDS: ${DOCKER_TIMEOUT_SECONDS:-10}
+      STOP_GRACE_SECONDS: ${STOP_GRACE_SECONDS:-}
+      LOG_TAIL_LINES: ${LOG_TAIL_LINES:-200}
+      LOG_MAX_BYTES: ${LOG_MAX_BYTES:-262144}
+      ENABLE_DOCS: ${ENABLE_DOCS:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     ports:
-      - "8000:8000"
+      - "127.0.0.1:${WEB_PORT:-8000}:8000"
+
+networks:
+  docker-api:
+    internal: true

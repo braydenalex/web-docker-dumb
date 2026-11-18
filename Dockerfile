@@ -1,18 +1,14 @@
-FROM python:3.9
+FROM python:3.13-slim-trixie@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
 
-# Copy Python deps
 COPY backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
+    && useradd --uid 10001 --user-group --no-create-home --shell /usr/sbin/nologin dashboard
 
-# Copy backend code
-COPY backend/ /app/backend
+COPY backend/main.py backend/main.py
+COPY frontend/ backend/frontend_build/
 
-# Copy frontend to "frontend_build"
-COPY frontend/ /app/backend/frontend_build/
-
-# Expose port 8000
+USER dashboard
 EXPOSE 8000
-
-# Start FastAPI
 CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
